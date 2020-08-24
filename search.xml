@@ -1,0 +1,661 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>LAMP环境下搭建WordPress</title>
+    <url>/posts/24723/</url>
+    <content><![CDATA[<h2 id="导语"><a href="#导语" class="headerlink" title="导语"></a>导语</h2><blockquote>
+<p><strong>WordPress</strong>是一个以PHP和MySQL为平台的<a href="https://zh.wikipedia.org/wiki/%E8%87%AA%E7%94%B1%E5%8F%8A%E5%BC%80%E6%94%BE%E6%BA%90%E4%BB%A3%E7%A0%81%E8%BD%AF%E4%BB%B6" target="_blank" rel="noopener">自由开源</a>的博客软件和<a href="https://zh.wikipedia.org/wiki/%E5%86%85%E5%AE%B9%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F" target="_blank" rel="noopener">内容管理系统</a>。WordPress具有插件架构和模板系统。<a href="https://zh.wikipedia.org/wiki/Alexa_Internet" target="_blank" rel="noopener">Alexa排行</a>前100万的网站中有超过16.7%的网站使用WordPress。</p>
+</blockquote>
+<h2 id="LAMP环境搭建"><a href="#LAMP环境搭建" class="headerlink" title="LAMP环境搭建"></a>LAMP环境搭建</h2><p><strong>LAMP</strong>即Linux+Apache+MySQL(MariaDB)+PHP，由于其开源免费，所以是目前非常受欢迎的一组网站解决方案，本文也将采用此方案。</p>
+<h3 id="Linux选择"><a href="#Linux选择" class="headerlink" title="Linux选择"></a>Linux选择</h3><p>笔者选用的是CentOS 7.2这个版本，CentOS实质为无支持版的RHEl，稳定性还是比较高的，当然也可以选择其它发行版，只是后续的操作略有不同，本文将只介绍在CentOS下的操作（系统的安装和本文关系不大，故不再赘述）。</p>
+<h3 id="安装Apache"><a href="#安装Apache" class="headerlink" title="安装Apache"></a>安装Apache</h3><p>直接yum安装</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yum -y install httpd</span><br></pre></td></tr></table></figure>
+
+<p>安装完成后，启动服务</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl start httpd.service</span><br></pre></td></tr></table></figure>
+
+<p>设置为开机启动</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl <span class="built_in">enable</span> httpd.service</span><br></pre></td></tr></table></figure>
+
+<a id="more"></a> 
+
+<p>之后可以在浏览器输入localhost进行测试，由于笔者没有安装GUI，只能在客户端浏览器进行测试，在这之前需要打开80和443端口</p>
+<p>首先开启防火墙</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl start firewalld.service</span><br></pre></td></tr></table></figure>
+
+<p>设置为开机启动</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl <span class="built_in">enable</span> firewalld.service</span><br></pre></td></tr></table></figure>
+
+<p>开启端口（80和443）</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">firewall-cmd --permanent --zone=public --add-service=http</span><br><span class="line">firewall-cmd --permanent --zone=public --add-service=https</span><br></pre></td></tr></table></figure>
+
+
+<p>重启防火墙</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">firewall-cmd --reload</span><br></pre></td></tr></table></figure>
+
+<p>查询已开启端口</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">irewall-cmd --list-ports</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-e8cab0a95ec53574.png" alt="已开启的端口"></p>
+<p>客户端测试</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-e7fb5347e9b70f92.png" alt="客户端测试"></p>
+<h3 id="安装并配置数据库（Mariadb）"><a href="#安装并配置数据库（Mariadb）" class="headerlink" title="安装并配置数据库（Mariadb）"></a>安装并配置数据库（Mariadb）</h3><p>由于甲骨文公司收购了MySQL后，有将MySQL闭源的潜在风险，所以在CentOS 7中弃用了MySQL，改为支持Mariadb（MySQL的一个分支，与之完全兼容），所以本文也将使用该数据库。</p>
+<p>安装</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yum -y install mariadb-server mariadb</span><br></pre></td></tr></table></figure>
+
+<p>启动服务</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl start mariadb.service</span><br></pre></td></tr></table></figure>
+
+<p>设为开机启动</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl <span class="built_in">enable</span> mariadb.service</span><br></pre></td></tr></table></figure>
+
+<p>配置</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">mysql_secure_installation</span><br></pre></td></tr></table></figure>
+
+<p>配置过程中会有几个选项，大家根据自己的需要进行配置就好了</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-0517b94ef50c3272.png" alt="配置root密码"></p>
+<p>使用root用户登录mysql</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">mysql -u root -p</span><br></pre></td></tr></table></figure>
+
+<p>为WordPress创建数据库</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">CREATE DATABASE wordpress;</span><br></pre></td></tr></table></figure>
+
+<p>查看创建结果</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-a5c195cdb2cf520f.png" alt="创建结果"></p>
+<p>为该数据库创建用户</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">CREATE USER username@localhost IDENTIFIED BY &#39;password&#39;;</span><br></pre></td></tr></table></figure>
+
+
+
+<blockquote>
+<p>username - 你将创建的用户名,</p>
+<p>host - 指定该用户在哪个主机上可以登陆,如果是本地用户可用localhost, 如果想让该用户可以从任意远程主机登陆,可以使用通配符%. </p>
+<p>password - 该用户的登陆密码,密码可以为空,如果为空则该用户可以不需要密码登陆服务器. </p>
+</blockquote>
+<p>更改用户权限，保存并退出</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">GRANT ALL PRIVILEGES ON wordpress.* TO wordpressuser@localhost;&#96;</span><br><span class="line">FLUSH PRIVILEGES;&#96;</span><br><span class="line">exit</span><br></pre></td></tr></table></figure>
+
+<p>重启服务</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl restart  mariadb.service</span><br></pre></td></tr></table></figure>
+
+<p>`</p>
+<h3 id="安装PHP及相关组件"><a href="#安装PHP及相关组件" class="headerlink" title="安装PHP及相关组件"></a>安装PHP及相关组件</h3><p>首先安装PHP</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yum -y install php</span><br></pre></td></tr></table></figure>
+
+
+<p>安装相关组件</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yum -y install php-mysql php-gd php-ldap php-odbc php-pear php-xml php-xmlrpc php-mbstring php-snmp php-soap curl curl-devel</span><br></pre></td></tr></table></figure>
+
+<p>安装完成之后我们可以新建一个php页面进行测试</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">vim /var/www/html/info.php</span><br></pre></td></tr></table></figure>
+
+<p>编辑为以下内容</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-c96e736ab7604052.png" alt="info.php"></p>
+<p>重启httpd服务</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl restart httpd.service</span><br></pre></td></tr></table></figure>
+
+<p>打开网址 <a href="http://x.x.x.x/info.php" target="_blank" rel="noopener">http://x.x.x.x/info.php</a> 进行查看（x.x.x.x替换为你的主机ip地址）</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-f3790568cc03fd4e.png" alt="php测试页"></p>
+<h2 id="WordPress安装与配置"><a href="#WordPress安装与配置" class="headerlink" title="WordPress安装与配置"></a>WordPress安装与配置</h2><p>安装wget(下载) unzip(解压) net-tools(网络管理)–如果已有这些工具请跳过</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yum -y install wget unzip net-tools</span><br></pre></td></tr></table></figure>
+
+
+<p>下载WordPress</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">wget http://wordpress.org/latest.zip</span><br></pre></td></tr></table></figure>
+
+
+<p>解压文件，并将其复制到<strong>/var/www/html/</strong>目录下</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">unzip -q latest.zip</span><br><span class="line">cp -rf wordpress/* /var/www/html/</span><br></pre></td></tr></table></figure>
+
+<p>编辑配置文件</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> /var/www/html</span><br><span class="line">cp wp-config-sample.php wp-config.php </span><br><span class="line">vim wp-config.php</span><br></pre></td></tr></table></figure>
+
+<p>将其修改为以下格式(其中wordpress为数据库名称，wordpressuser为数据库用户名，10293847为数据库密码) </p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-7ace32cfaae175fd.png" alt="config.php"></p>
+<p>保存后退出，重启相关服务</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl restart httpd.service</span><br><span class="line">systemctl restart  mariadb.service</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="WordPress的个人设置"><a href="#WordPress的个人设置" class="headerlink" title="WordPress的个人设置"></a>WordPress的个人设置</h2><p>完成以上配置之后，便可以输入<a href="http://yourserverip/来访问你的博客了。" target="_blank" rel="noopener">http://yourserverip/来访问你的博客了。</a></p>
+<h3 id="选择语言"><a href="#选择语言" class="headerlink" title="选择语言"></a>选择语言</h3><p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-06ba6d0df947f56b.png" alt="选择语言"></p>
+<h3 id="填写个人信息"><a href="#填写个人信息" class="headerlink" title="填写个人信息"></a>填写个人信息</h3><p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-384f5dcfa6fb385a.png" alt="个人信息"></p>
+<h3 id="安装完成"><a href="#安装完成" class="headerlink" title="安装完成"></a>安装完成</h3><p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-5fc8f9ee1b30ba94.png" alt="安装完成"></p>
+<h3 id="登录到仪表盘"><a href="#登录到仪表盘" class="headerlink" title="登录到仪表盘"></a>登录到仪表盘</h3><p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-200af411ba12ff15.png" alt="仪表盘"></p>
+<hr>
+<p>至此WordPress已经搭建完成，之后可根据自己的需要进行其它配置</p>
+<p><strong>本文有参考网上其它文章，如侵犯到个人利益，请与我联系</strong></p>
+]]></content>
+      <categories>
+        <category>WordPress</category>
+      </categories>
+      <tags>
+        <tag>WordPress</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Ubuntu18-04配置阿里云DDNS</title>
+    <url>/posts/38481/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近更换了电信的宽带，顺便申请了一个固定IP，于是想要通过域名直接访问家里的服务器，但是电信分配的IP在光猫重启时会发生变化，于是便想到了借助DDNS（动态域名解析）来解决这个问题。</p>
+<a id="more"></a>
+
+<h2 id="安装Node-js"><a href="#安装Node-js" class="headerlink" title="安装Node.js"></a>安装Node.js</h2><p>因为笔者使用的这个开源库使用js写的，所以需要安装Node.js</p>
+<p>下面的安装是针对Ubuntu用户的操作，其他系统用户请自行去官网查找安装</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -</span><br><span class="line">sudo apt-get install -y nodejs</span><br></pre></td></tr></table></figure>
+
+<h2 id="下载-amp-配置aliyun-ddns"><a href="#下载-amp-配置aliyun-ddns" class="headerlink" title="下载&amp;配置aliyun-ddns"></a>下载&amp;配置aliyun-ddns</h2><p>下载地址：<a href="https://github.com/yyqian/aliyun-ddns" target="_blank" rel="noopener">https://github.com/yyqian/aliyun-ddns</a></p>
+<p><strong>目前该工具分为两种模式的版本：</strong></p>
+<ul>
+<li>client-mode，这种模式下只需要在客户端定时执行一个 Node.js 程序，当前地址的公网 IP 是借助访问公共的 API 来获取的</li>
+<li>server-mode，这种模式需要在服务端部署一个 Node.js 程序，并且在客户端定时请求服务端以使得服务端获知当前客户端所在地址的公网 IP</li>
+</ul>
+<p><strong>笔者这里使用client-mode，配置如下：</strong></p>
+<ol>
+<li><p>下载aliyun-ddns</p>
+</li>
+<li><p>复制 client-mode/config-sample.json 并命名为 client-mode/config.json</p>
+</li>
+<li><p>修改 client-mode/config.json 中的内容, 参数说明见下面</p>
+</li>
+<li><p>参照 client-mode/client.sh 写个 shell script</p>
+</li>
+<li><p>让脚本可运行: <code>chmod 775 client-mode/client.sh</code></p>
+<p><strong>client-mode/config.json 参数说明：</strong></p>
+</li>
+</ol>
+<ul>
+<li>AccessKeyId 和 AccessKeySecret 在阿里云的控制台获取, 注意保密</li>
+<li>hostnames 是待更新的多个 DNS (子)域名</li>
+</ul>
+<h2 id="crontab-定时执行"><a href="#crontab-定时执行" class="headerlink" title="crontab 定时执行"></a>crontab 定时执行</h2><ol>
+<li>编辑 crontab: <code>crontab -e</code></li>
+<li>添加记录, 让脚本 5 分钟调用一次: <code>*/5 * * * * /path/to/client-mode/client.sh</code></li>
+<li>重启 cron 服务</li>
+</ol>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>DDNS Ubuntu Node.js</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>讯飞语音听写Demo</title>
+    <url>/posts/61123/</url>
+    <content><![CDATA[<h2 id="导语"><a href="#导语" class="headerlink" title="导语"></a>导语</h2><blockquote>
+<p>自从上次看了锤子M1发布会之后，一直对发布会上大放光彩的讯飞语音识别很感兴趣，最近正好有时间，便做了一个小Demo与大家分享一下。</p>
+</blockquote>
+<hr>
+<h2 id="效果演示"><a href="#效果演示" class="headerlink" title="效果演示"></a>效果演示</h2><p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-d0bfbc4df57abf7f.gif" alt=""></p>
+<a id="more"></a>
+
+<h2 id="下载SDK"><a href="#下载SDK" class="headerlink" title="下载SDK"></a>下载SDK</h2><p>我们的Demo开发需要借助讯飞开放平台提供的SDK，所以第一步我们需要先<a href="http://www.xfyun.cn/sdk/dispatcher" target="_blank" rel="noopener">下载SDK</a></p>
+<p>首先我们需要先创建一个应用</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-00a835cf6c5742a6.gif" alt=""></p>
+<p>应用创建完成后，我们再次来到SDK下载页面，选择相应的服务</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-883a6aba40ea2280.gif" alt=""></p>
+<p>选中刚才创建的应用（该应用会和下载的SDK进行绑定）</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-ad53fc8b1cc9b278.gif" alt=""></p>
+<h2 id="导入SDK"><a href="#导入SDK" class="headerlink" title="导入SDK"></a>导入SDK</h2><p>将下载的SDK文件解压</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-de4197f65ba48c31.png" alt=""></p>
+<p>将 <strong>libs</strong> 里面的jar文件和so库文件拷贝到项目的 <strong>libs</strong> 目录</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-e65993dd0e7ce700.png" alt=""></p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-ab44ab58426bad66.png" alt=""></p>
+<p>选中两个jar文件右键选择“Add As Libary”,将jar文件添加到库</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-e9c964e01ed3a49c.png" alt=""></p>
+<p>接下来就是导入<strong>assets</strong>目录里面的资源文件，Android Studio默认并没有创建该目录，所以我们需要自己手动创建，在项目的app目录上面右键 New/Folder/Assets Folder</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-fe6e6d4a5a16bde8.png" alt=""></p>
+<p>最后，我们打开Module的 <strong>build.gradle</strong> 文件在 <strong>android</strong> 标签下添加如下代码，指定so库的位置</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">sourceSets &#123;</span><br><span class="line">        main &#123;</span><br><span class="line">            jniLibs.srcDirs = [<span class="string">'libs'</span>]</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="添加用户权限"><a href="#添加用户权限" class="headerlink" title="添加用户权限"></a>添加用户权限</h2><p>在工程AndroidManifest.xml 文件中添加如下权限</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!--连接网络权限，用于执行云端语音能力--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">uses-permission</span> <span class="attr">android:name</span>=<span class="string">"android.permission.INTERNET"</span>/&gt;</span></span><br><span class="line"><span class="comment">&lt;!--获取手机录音机使用权限--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">uses-permission</span> <span class="attr">android:name</span>=<span class="string">"android.permission.RECORD_AUDIO"</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h2><p>进入<a href="http://www.xfyun.cn/index.php/mycloud/app/appManage" target="_blank" rel="noopener">我的应用</a>,复制自己的id</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-ad9ef14cb43e5423.gif" alt=""></p>
+<p>初始化即创建语音配置对象，只有初始化后才可以使用MSC 的各项服务。建议将初始化放在程序入口处（如Application、Activity 的 onCreate 方法），初始化代码如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//将“12345678”替换成您申请的APPID</span></span><br><span class="line">SpeechUtility.createUtility(<span class="keyword">this</span>,SpeechConstant.APPID+<span class="string">"=12345678"</span>);</span><br></pre></td></tr></table></figure>
+
+<h2 id="按钮监听"><a href="#按钮监听" class="headerlink" title="按钮监听"></a>按钮监听</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//按钮监听</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">startListener</span><span class="params">(View view)</span></span>&#123;</span><br><span class="line">       <span class="comment">//1.创建RecognizerDialog对象</span></span><br><span class="line">       RecognizerDialog mDialog = <span class="keyword">new</span> RecognizerDialog(<span class="keyword">this</span>,<span class="keyword">null</span>);</span><br><span class="line">       <span class="comment">//2.设置accent、language等参数</span></span><br><span class="line">       mDialog.setParameter(SpeechConstant.LANGUAGE, <span class="string">"zh_cn"</span>);</span><br><span class="line">       mDialog.setParameter(SpeechConstant.ACCENT, <span class="string">"mandarin"</span>);</span><br><span class="line">       <span class="comment">// 3.设置回调接口</span></span><br><span class="line">       mDialog.setListener(<span class="keyword">new</span> RecognizerDialogListener() &#123;</span><br><span class="line">		    <span class="comment">//识别结果的回调接口,会进行多次回调</span></span><br><span class="line">            <span class="comment">//当isLast为true时，识别结束</span></span><br><span class="line">           <span class="meta">@Override</span></span><br><span class="line">           <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onResult</span><span class="params">(RecognizerResult result, <span class="keyword">boolean</span> isLast)</span> </span>&#123;</span><br><span class="line">	           <span class="comment">//System.out.println("识别结果："+result);</span></span><br><span class="line">               mBuffer.append(parseDatd(result.getResultString()));</span><br><span class="line">               <span class="keyword">if</span> (isLast)&#123;</span><br><span class="line">                   editText.setText(mBuffer.toString());</span><br><span class="line">               &#125;</span><br><span class="line">           &#125;</span><br><span class="line">           <span class="meta">@Override</span></span><br><span class="line">           <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(SpeechError speechError)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">           &#125;</span><br><span class="line">       &#125;);</span><br><span class="line">       <span class="comment">//4.显示dialog，接收语音输入</span></span><br><span class="line">       mDialog.show();</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="解析数据"><a href="#解析数据" class="headerlink" title="解析数据"></a>解析数据</h2><p>由于识别结果返回的是json格式的数据，我们并不能直接使用，此时需要将json转换为普通的String数据</p>
+<p>我们可以借助一个开源的类库 GSON     添加方法如下：</p>
+<p>按快捷键<code>Ctrl + Shift + Alt + S</code> 打开 <strong>项目结构</strong> 对话框，切换到 <strong>依赖</strong> 选项卡，点击右上角“+”号，搜索 <strong>gson</strong> ，如下图：</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-07cc4e2d6cf3f718.gif" alt=""></p>
+<p>或者直接在项目的 <strong>build.gradle</strong> 文件的 <strong>dependencies</strong> 标签下，添加如下代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">compile <span class="string">'com.google.code.gson:gson:2.8.0'</span></span><br></pre></td></tr></table></figure>
+
+<p>解析json数据时，我们需要创建一个Bean类，可以借助Android Studio的一个插件 <strong>GsonFormat</strong> 帮我们快速生成，安装步骤如下：</p>
+<p>按快捷键<code>Ctrl +  Alt + S</code> 打开 <strong>Settings</strong> 对话框，选择 <strong>Plugins</strong> </p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-4a2d1fe154cad70c.gif" alt=""></p>
+<h3 id="1-编写Bean类"><a href="#1-编写Bean类" class="headerlink" title="1.编写Bean类"></a>1.编写Bean类</h3><p>我们可以先运行程序进行测试，将结果打印出来</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-be568da80a1b2dac.png" alt=""></p>
+<p>新建一个VoiceBean类，在该类的编辑界面 按<code>Alt +  S</code> 快捷键，打开<strong>GsonFormat</strong>插件,复制刚才打印的json数据</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-6c9c2c94db96703d.gif" alt=""></p>
+<p>从打印出的json中发现，我们只需要 <strong>“w”</strong> 对应的数据</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-7c5da486ef6cf863.gif" alt=""></p>
+<p>点击 <strong>OK</strong> 即可创建完成</p>
+<h3 id="2-解析代码"><a href="#2-解析代码" class="headerlink" title="2.解析代码"></a>2.解析代码</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//解析数据</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> String <span class="title">parseDatd</span><span class="params">(String json)</span> </span>&#123;</span><br><span class="line">	<span class="comment">//创建Gson对象</span></span><br><span class="line">    Gson gson = <span class="keyword">new</span> Gson();</span><br><span class="line">    VoiceBean voiceBean = gson.fromJson(json,VoiceBean<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    StringBuffer sb = <span class="keyword">new</span> StringBuffer();</span><br><span class="line">    List&lt;VoiceBean.WsBean&gt; ws = voiceBean.getWs();</span><br><span class="line">    <span class="keyword">for</span> (VoiceBean.WsBean wsBean : ws)&#123;</span><br><span class="line">	    String word = wsBean.getCw().get(<span class="number">0</span>).getW();</span><br><span class="line">        sb.append(word);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> sb.toString();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="项目文件下载"><a href="#项目文件下载" class="headerlink" title="项目文件下载"></a>项目文件<a href="http://download.csdn.net/detail/xx_csdn_xx/9732289" target="_blank" rel="noopener">下载</a></h2>]]></content>
+      <categories>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>讯飞</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Ubuntu14-04下编译Android8-1-0源码并刷入到设备</title>
+    <url>/posts/1473/</url>
+    <content><![CDATA[<h2 id="编译平台"><a href="#编译平台" class="headerlink" title="编译平台"></a>编译平台</h2><blockquote>
+<p><strong>软件平台</strong><br>-Win10 Home 64bit<br>-Vmware workstation 15<br>-Ubuntu 14.04.6LTS<br>-OpenJDK1.8.0_45<br>-Android-8.1.0_r52</p>
+</blockquote>
+<blockquote>
+<p><strong>硬件平台</strong><br>-i7 8750H 32G 512G<br>-Nexus 5x</p>
+</blockquote>
+<h2 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h2><h3 id="1-在Vmware中安装Ubuntu，过程省略"><a href="#1-在Vmware中安装Ubuntu，过程省略" class="headerlink" title="1.在Vmware中安装Ubuntu，过程省略"></a><strong>1.在Vmware中安装Ubuntu，过程省略</strong></h3><blockquote>
+<p>注意：虚拟机建议分配200G以上的空间，Android-8.1.0_r52编译完大约占用152G,加上系统占用共156G,但是你硬盘最低要有250G的可用空间，因为Vmware还会占用一部分，笔者编译完后整个虚拟机文件夹214G左右。同时虚拟机内存建议分配8G以上，CPU根据自己宿主机的CPU情况来分。</p>
+</blockquote>
+ <a id="more"></a> 
+
+<h3 id="2-安装OpenJDK"><a href="#2-安装OpenJDK" class="headerlink" title="2.安装OpenJDK"></a><strong>2.安装OpenJDK</strong></h3><p>我们编译的Android版本为8.1，所以这里采用OpenJDK8，各Android版本对应的JDK如下：</p>
+<blockquote>
+<ul>
+<li>Android 7.0 (Nougat) - Android 8.0 (Oreo)：Ubuntu - <a href="http://openjdk.java.net/install/" target="_blank" rel="noopener">OpenJDK 8</a>；Mac OS - <a href="http://www.oracle.com/technetwork/java/javase/downloads/java-archive-javase8-2177648.html#jdk-8u45-oth-JPR" target="_blank" rel="noopener">jdk 8u45 或更高版本</a></li>
+<li>Android 5.x (Lollipop) - Android 6.0 (Marshmallow)：Ubuntu - <a href="http://openjdk.java.net/install/" target="_blank" rel="noopener">OpenJDK 7</a>；Mac OS - <a href="https://www.oracle.com/technetwork/java/javase/downloads/java-archive-downloads-javase7-521261.html#jdk-7u71-oth-JPR" target="_blank" rel="noopener">jdk-7u71-macosx-x64.dmg</a></li>
+<li>Android 2.3.x (Gingerbread) - Android 4.4.x (KitKat)：Ubuntu - <a href="http://www.oracle.com/technetwork/java/javase/archive-139210.html" target="_blank" rel="noopener">Java JDK 6</a>；Mac OS - <a href="http://support.apple.com/kb/dl1572" target="_blank" rel="noopener">Java JDK 6</a></li>
+<li>Android 1.5 (Cupcake) - Android 2.2.x (Froyo)：Ubuntu - <a href="http://www.oracle.com/technetwork/java/javase/archive-139210.html" target="_blank" rel="noopener">Java JDK 5</a></li>
+</ul>
+</blockquote>
+<p>（1）下载.deb 软件包：</p>
+<ul>
+<li><a href="http://old-releases.ubuntu.com/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre-headless_8u45-b14-1_amd64.deb" target="_blank" rel="noopener">openjdk-8-jre-headless_8u45-b14-1_amd64.deb</a><br>（SHA256：<code>0f5aba8db39088283b51e00054813063173a4d8809f70033976f83e214ab56c0</code>）</li>
+<li><a href="http://old-releases.ubuntu.com/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre_8u45-b14-1_amd64.deb" target="_blank" rel="noopener">openjdk-8-jre_8u45-b14-1_amd64.deb</a><br>（SHA256：<code>9ef76c4562d39432b69baf6c18f199707c5c56a5b4566847df908b7d74e15849</code>）</li>
+<li><a href="http://old-releases.ubuntu.com/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jdk_8u45-b14-1_amd64.deb" target="_blank" rel="noopener">openjdk-8-jdk_8u45-b14-1_amd64.deb</a><br>（SHA256：<code>6e47215cf6205aa829e6a0a64985075bd29d1f428a4006a80c9db371c2fc3c4c</code>）</li>
+</ul>
+<p>（2）（可选）对照随以上每个软件包列出的 SHA256 字符串，确认已下载文件的校验和。例如，使用 sha256sum 工具：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sha256sum &#123;下载的.deb文件&#125;</span><br></pre></td></tr></table></figure>
+<p>（3） 依次安装下载的三个软件包：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo dpkg -i &#123;下载的.deb文件&#125;</span><br></pre></td></tr></table></figure>
+<p>安装过成中可能会提示缺少依赖，可以使用如下命令自动安装依赖： </p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo apt-get -f install</span><br></pre></td></tr></table></figure>
+<h3 id="3-安装编译所需的软件包"><a href="#3-安装编译所需的软件包" class="headerlink" title="3.安装编译所需的软件包"></a><strong>3.安装编译所需的软件包</strong></h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo apt-get install git-core gnupg flex bison gperf build-essential zip curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z-dev libgl1-mesa-dev libxml2-utils xsltproc unzip</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-配置Git"><a href="#4-配置Git" class="headerlink" title="4.配置Git"></a><strong>4.配置Git</strong></h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git config --global user.name <span class="string">"你的名字"</span></span><br><span class="line">git config --global user.email <span class="string">"你的邮箱"</span></span><br></pre></td></tr></table></figure>
+<h3 id="5-下载-repo-工具"><a href="#5-下载-repo-工具" class="headerlink" title="5.下载 repo 工具"></a><strong>5.下载 repo 工具</strong></h3><blockquote>
+<p>由于国内的特殊情况，这里采用清华的镜像源</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">mkdir ~/bin</span><br><span class="line">PATH=~/bin:<span class="variable">$PATH</span></span><br><span class="line">curl https://mirrors.tuna.tsinghua.edu.cn/git/git-repo &gt; ~/bin/repo</span><br><span class="line">chmod a+x ~/bin/repo</span><br></pre></td></tr></table></figure>
+<p>repo的运行过程中会尝试访问官方的git源更新自己，如果想使用清华的镜像源进行更新，可以使用下面的命令临时将地址设为清华源（想永久有效可以复制到你的~/.bashrc里）</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">export</span> REPO_URL=<span class="string">'https://mirrors.tuna.tsinghua.edu.cn/git/git-repo/'</span></span><br></pre></td></tr></table></figure>
+<h2 id="下载源码"><a href="#下载源码" class="headerlink" title="下载源码"></a>下载源码</h2><h3 id="1-建立工作目录"><a href="#1-建立工作目录" class="headerlink" title="1.建立工作目录"></a>1.建立工作目录</h3><p>首先我们先建立一个工作目录，下载的源码和编译的输出都将在这个目录</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">mkdir WORKING_DIRECTORY</span><br><span class="line"><span class="built_in">cd</span> WORKING_DIRECTORY</span><br></pre></td></tr></table></figure>
+<h3 id="2-初始化仓库"><a href="#2-初始化仓库" class="headerlink" title="2.初始化仓库"></a>2.初始化仓库</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">repo init -u https://aosp.tuna.tsinghua.edu.cn/platform/manifest -b android-8.1.0_r52</span><br></pre></td></tr></table></figure>
+<h3 id="3-同步源码树"><a href="#3-同步源码树" class="headerlink" title="3.同步源码树"></a>3.同步源码树</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">repo sync -j4</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意：-j后面的参数不要太大，否则会出现 503 错误，同时此过程要尽量保证网络不要中断</p>
+</blockquote>
+<h3 id="4-清理缓存文件"><a href="#4-清理缓存文件" class="headerlink" title="4.清理缓存文件"></a>4.清理缓存文件</h3><p>repo sync支持断点续传，但不是纯粹的断点续传，之前下载完成的文件会直接跳过，但是中断的时候未下载完的文件，会重新下载，之后要记得清理</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">find . -iname tmp_pack_* | xargs rm</span><br></pre></td></tr></table></figure>
+
+<h2 id="下载专有驱动"><a href="#下载专有驱动" class="headerlink" title="下载专有驱动"></a>下载专有驱动</h2><blockquote>
+<p>因为我们最终是要烧录到物理设备上，所以需要下载专有驱动，如果是运行在模拟器，这一步可以忽略</p>
+</blockquote>
+<p>以Nexus 5X为例，我们需要下载的驱动如下：</p>
+<table>
+<thead>
+<tr>
+<th>硬件</th>
+<th>供应商</th>
+<th>链接</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Vendor image</td>
+<td>LG</td>
+<td><a href="https://dl.google.com/dl/android/aosp/lge-bullhead-opm7.181205.001-bb4176a6.tgz" target="_blank" rel="noopener">下载</a></td>
+</tr>
+<tr>
+<td>GPS, Audio, Camera, Gestures, Graphics, DRM, Video, Sensors</td>
+<td>Qualcomm</td>
+<td><a href="https://dl.google.com/dl/android/aosp/qcom-bullhead-opm7.181205.001-89810045.tgz" target="_blank" rel="noopener">下载</a></td>
+</tr>
+</tbody></table>
+<p>这些压缩包中都是自解压脚本，从源代码树的根目录运行附带的自解压脚本，然后确认同意附带的许可协议的条款。二进制文件及其对应的 Makefile 将会安装在源代码树的 vendor/ 目录中</p>
+<p>由于我们之前并没有进行任何编译，所以不需要执行特定的清理操作，否则，请在编译前清理已有编译的输出：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">make clobber</span><br></pre></td></tr></table></figure>
+
+<h2 id="开始编译"><a href="#开始编译" class="headerlink" title="开始编译"></a>开始编译</h2><h3 id="1-首先初始化脚本"><a href="#1-首先初始化脚本" class="headerlink" title="1.首先初始化脚本"></a><strong>1.首先初始化脚本</strong></h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">source</span> build/envsetup.sh</span><br></pre></td></tr></table></figure>
+<p>在这一步，脚本会为我们初始化很多编译必须的工具</p>
+<h3 id="2-选择编译目标"><a href="#2-选择编译目标" class="headerlink" title="2.选择编译目标"></a><strong>2.选择编译目标</strong></h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">lunch</span><br></pre></td></tr></table></figure>
+<p>该命令会帮我们列出当前版本支持的编译目标</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-ad5c244073b2a1ce.png" alt="支持的编译目标"></p>
+<blockquote>
+<p>需要注意的是这里输出的编译目标都是以手机代号的形式呈现的，Nexus 5x的代号为bullhead</p>
+</blockquote>
+<h3 id="3-选择编译类型"><a href="#3-选择编译类型" class="headerlink" title="3.选择编译类型"></a>3.选择编译类型</h3><table>
+<thead>
+<tr>
+<th>编译类型</th>
+<th>使用情况</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>user</td>
+<td>权限受限；适用于生产环境</td>
+</tr>
+<tr>
+<td>userdebug</td>
+<td>与“user”类似，但具有 root 权限和可调试性；是进行调试时的首选编译类型</td>
+</tr>
+<tr>
+<td>eng</td>
+<td>具有额外调试工具的开发配置</td>
+</tr>
+</tbody></table>
+<p>我们后期需要对系统进行调试，所以这里我们选择aosp_bullhead-userdebug,输入29后回车选择，之后系统会针对选定的编译目标进行编译配置</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-84b15d4ca5310a87.png" alt=""></p>
+<h3 id="4-执行编译"><a href="#4-执行编译" class="headerlink" title="4.执行编译"></a><strong>4.执行编译</strong></h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">make -j16</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意：-j后面的参数可以根据自己分配给虚拟机的CPU情况来定，例如，笔者分配给虚拟机1个CPU,每个CPU8个内核，每个内核2个线程，要实现最快的编译速度，可以使用介于 make -j16 到 make -j32 之间的命令</p>
+</blockquote>
+<p>当然这一步通常并不会一帆风顺，总会有各种问题出现，比较常见的有内存溢出：</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-5ac5bfa8b873352a.png" alt="Out of memory error"></p>
+<p>这是由于Java的堆内存溢出造成的，解决方法为：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">export</span> JACK_SERVER_VM_ARGUMENTS=<span class="string">"-Dfile.encoding=UTF-8 -XX:+TieredCompilation -Xmx4096m"</span></span><br><span class="line">./prebuilts/sdk/tools/jack-admin <span class="built_in">kill</span>-server</span><br><span class="line">./prebuilts/sdk/tools/jack-admin start-server</span><br></pre></td></tr></table></figure>
+<p>然后继续执行编译</p>
+<p><strong>5.编译成功</strong></p>
+<p>这个编译时间和硬件配置有关，笔者的电脑最终编译完成耗时1小时多一点</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-e386c503677e365f.png" alt="编译成功"></p>
+<h2 id="刷入设备"><a href="#刷入设备" class="headerlink" title="刷入设备"></a>刷入设备</h2><h3 id="配置-USB-使用权限"><a href="#配置-USB-使用权限" class="headerlink" title="配置 USB 使用权限"></a><strong>配置 USB 使用权限</strong></h3><p>如果在 Ubuntu Linux 上开发，需要为想要在开发中使用的每一种设备类型添加一个包含 USB 配置的 udev 规则文件。在规则文件中，每一个设备制造商都由一个唯一的供应商 ID，部分供应商ID如下图：<br><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-07966a6df3ecb8b1.png" alt="部分供应商ID"></p>
+<p>（1）创建规则文件：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo gedit /etc/udev/rules.d/51-android.rules</span><br></pre></td></tr></table></figure>
+<p>（2）使用下面的格式将供应商添加到文件中：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">SUBSYSTEM==<span class="string">"usb"</span>, ATTR&#123;idVendor&#125;==<span class="string">"18d1"</span>, MODE=<span class="string">"0666"</span>, GROUP=<span class="string">"plugdev"</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意：Nexus 5X的供应商应是Google,不是LG</p>
+</blockquote>
+<p>（3）设置文件权限：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">chmod a+r /etc/udev/rules.d/51-android.rules</span><br></pre></td></tr></table></figure>
+<p>现在将设备重新拔下并插上，adb验证一下是否能够识别到：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">adb devices</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-e73c3d66dc07f739.png" alt=""></p>
+<p>（4）设备连接成功之后，现在要进入fastboot模式：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">adb reboot bootloader</span><br></pre></td></tr></table></figure>
+<p>（5）在设备处于 fastboot 模式后，运行以下命令刷写整个Android系统：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">fastboot flashall -w</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>执行此命令之前需要先对设备解锁，-w 选项会清除设备上的 /data 分区；该选项在第一次刷写特定设备时非常有用，但在其他情况下则没必要使用。</p>
+</blockquote>
+<p>刷写完成之后，系统会自动重启</p>
+<h2 id="最后，附上成果图："><a href="#最后，附上成果图：" class="headerlink" title="最后，附上成果图："></a>最后，附上成果图：</h2><p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/2109064-a904f2ae83d4da8d.jpg" alt=""></p>
+]]></content>
+      <categories>
+        <category>AOSP</category>
+      </categories>
+      <tags>
+        <tag>AOSP</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Android反编译工具使用</title>
+    <url>/posts/eb2f3b3b/</url>
+    <content><![CDATA[<h2 id="apktool"><a href="#apktool" class="headerlink" title="apktool"></a>apktool</h2><p><strong>功能</strong>：主要用于反编译项目中的资源文件，以及将字节码反编译成Smali语言</p>
+<p><strong>下载地址：</strong><a href="https://ibotpeaches.github.io/Apktool/install" target="_blank" rel="noopener">https://ibotpeaches.github.io/Apktool/install</a></p>
+<p><strong>运行环境：</strong>Java 8</p>
+<p><strong>使用</strong>：</p>
+<p>反编译</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ apktool d test.jar</span><br><span class="line">// 反编译jar文件</span><br><span class="line"></span><br><span class="line">$ apktool decode test.jar</span><br><span class="line">// 反编译jar文件</span><br><span class="line"></span><br><span class="line">$ apktool d test.apk</span><br><span class="line">// 反编译apk文件</span><br><span class="line"></span><br><span class="line">$ apktool decode test.apk</span><br><span class="line">// 反编译apk文件</span><br><span class="line"></span><br><span class="line">$ apktool d test.apk -o demo</span><br><span class="line">// 反编译apk文件 指定输出目录</span><br></pre></td></tr></table></figure>
+
+<a id="more"></a>
+
+<p>打包</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ apktool build <span class="built_in">test</span></span><br><span class="line">// 打包jar文件，输出位置<span class="built_in">test</span>/dist/</span><br><span class="line"></span><br><span class="line">$ apktool b <span class="built_in">test</span></span><br><span class="line">// 打包apk文件，输出位置<span class="built_in">test</span>/dist/</span><br><span class="line"></span><br><span class="line">$ apktool b .</span><br><span class="line">// 打包apk文件 输出位置./dist</span><br><span class="line"></span><br><span class="line">$ apktool b bar -o new_bar.apk</span><br><span class="line">// 打包apk文件 指定输出位置</span><br></pre></td></tr></table></figure>
+
+<h2 id="dex2jar"><a href="#dex2jar" class="headerlink" title="dex2jar"></a>dex2jar</h2><p><strong>功能</strong>：将dex文件转为可阅读的jar文件</p>
+<p><strong>下载地址：</strong><a href="https://github.com/pxb1988/dex2jar" target="_blank" rel="noopener">https://github.com/pxb1988/dex2jar</a></p>
+<p><strong>运行环境：</strong>Java 8</p>
+<p><strong>使用</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ d2j-dex2jar.sh test.dex</span><br><span class="line">// 将dex文件转为jar文件（dex文件可以手动解压apk获取）</span><br><span class="line"></span><br><span class="line">$ d2j-dex2jar.sh -f test.apk</span><br><span class="line">// 将apk内的dex文件提取后转为jar文件</span><br></pre></td></tr></table></figure>
+
+<h2 id="jd-gui"><a href="#jd-gui" class="headerlink" title="jd-gui"></a>jd-gui</h2><p><strong>功能</strong>：用于阅读和修改jar文件或class文件</p>
+<p><strong>下载地址：</strong><a href="http://java-decompiler.github.io" target="_blank" rel="noopener">http://java-decompiler.github.io</a></p>
+<p><strong>运行环境：</strong>Java 8（注意：不支持openJDK）</p>
+<p><strong>使用</strong>：</p>
+<p>直接打开jar文件或class文件</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/jd-gui-main.png" alt=""></p>
+<h2 id="jadx-gui"><a href="#jadx-gui" class="headerlink" title="jadx-gui"></a>jadx-gui</h2><p><strong>功能</strong>：用于阅读和修改dex文件，并且可以很方便的在java代码和Smali代码间切换</p>
+<p><strong>下载地址：</strong><a href="https://github.com/skylot/jadx" target="_blank" rel="noopener">https://github.com/skylot/jadx</a></p>
+<p><strong>运行环境：</strong>Java 8（注意：不支持openJDK）</p>
+<p><strong>使用</strong>：</p>
+<p>直接打开dex文件</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/jadx-gui-main.png" alt=""></p>
+<h2 id="jbe"><a href="#jbe" class="headerlink" title="jbe"></a>jbe</h2><p><strong>功能</strong>：编辑Java字节码</p>
+<p><strong>下载地址：</strong><a href="https://set.ee/jbe" target="_blank" rel="noopener">https://set.ee/jbe</a></p>
+<p><strong>运行环境：</strong>Java 1.5+（注意：不支持openJDK）</p>
+<p><strong>使用</strong>：</p>
+<p>打开class文件（File——Open class file）</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/jbe-main.png" alt=""></p>
+<p>左边可以看到该类的常量池（Constant Pool）、字段（Fields）、方法（Method）等信息</p>
+<p>点击XXX方法，选择[0] Code查看该方法的字节码</p>
+<p>右边可以看到方法的字节码，点击Code Editor可编辑字节码</p>
+<h2 id="jad"><a href="#jad" class="headerlink" title="jad"></a>jad</h2><p><strong>功能</strong>：反编译class文件</p>
+<p><strong>下载地址：</strong><a href="http://www.javadecompilers.com/jad" target="_blank" rel="noopener">http://www.javadecompilers.com/jad</a></p>
+<p><strong>运行环境：</strong>Java 1.5+（注意：不支持openJDK）</p>
+<p><strong>使用</strong>：</p>
+<p>jad本身没有ui界面，所以为了方便使用，可以将其添加到系统path变量中，之后便可以直接使用jad命令进行反编译操作</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ jad test.class</span><br></pre></td></tr></table></figure>
+
+<p>操作成功后，会在当前class文件目录下生成一个同名的.jad文件，直接用文本编辑器打开即可进行阅读</p>
+<h2 id="luyten"><a href="#luyten" class="headerlink" title="luyten"></a>luyten</h2><p><strong>功能</strong>：用于阅读和修改jar文件或class文件</p>
+<p><strong>下载地址：</strong><a href="https://github.com/deathmarine/Luyten" target="_blank" rel="noopener">https://github.com/deathmarine/Luyten</a></p>
+<p><strong>运行环境：</strong>Java 1.8（注意：不支持openJDK）</p>
+<p><strong>使用</strong>：</p>
+<p>直接打开jar文件或class文件</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/luyten-main.png" alt=""></p>
+<h2 id="AndroidKiller"><a href="#AndroidKiller" class="headerlink" title="AndroidKiller"></a>AndroidKiller</h2><p><strong>功能</strong>：集成了前面工具的所有功能，用于直接对apk文件进行反编译、修改、打包等</p>
+<p><strong>下载地址：</strong><a href="https://www.pd521.com/thread-136-1-1.html（需注册）" target="_blank" rel="noopener">https://www.pd521.com/thread-136-1-1.html（需注册）</a></p>
+<p><strong>运行环境：</strong>Java 1.8、apktool</p>
+<p><strong>使用</strong>：</p>
+<p>自带的是ShakaApktool，很久没有更新了，所以我们要更换为apktool，按照下图选择自己的apktool路径，参数选项可不填<br><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/androidkiller-config-apktool.png" alt=""></p>
+<p>直接点击打开，选择一个apk文件</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/androidkiller-main.png" alt=""></p>
+<p>工程信息窗口</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/androidkiller-project.png" alt=""></p>
+<p>左侧有apk的入口页面、以及版本信息、四大组件列表、权限信息等</p>
+<p>右侧则是代码编辑窗口、日志信息、方法引用等</p>
+<p>这里只演示基本使用，更多功能还请自行探索</p>
+<h2 id="IDA-Pro"><a href="#IDA-Pro" class="headerlink" title="IDA_Pro"></a>IDA_Pro</h2><p><strong>功能</strong>：IDA Pro能够对so文件进行反汇编，从而将二进制代码转化为汇编语言，利用IDA Pro神奇的F5功能还能将汇编语言反编译成c/c++程序</p>
+<p><strong>下载地址：</strong><a href="https://www.hex-rays.com/products/ida（需购买）" target="_blank" rel="noopener">https://www.hex-rays.com/products/ida（需购买）</a></p>
+<p><strong>运行环境：</strong>windows 7+、vc2013、vc2015</p>
+<p><strong>使用</strong>：</p>
+<p>根据自己电脑的位数选择打开ida.exe或者ida64.exe,之后选择新建打开so文件</p>
+<img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/ida-start.png" style="zoom: 80%;" />
+
+<p>打开后进入工程页面</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/ida-main.png" alt=""></p>
+<p>左侧可以看到函数名称，选中函数后，按下F5还可以查看c++伪代码</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/ida-code.png" alt=""></p>
+<p>这里只演示基本使用，更多功能还请自行探索</p>
+]]></content>
+      <categories>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>反编译</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>App全局灰度化实践</title>
+    <url>/posts/94802444/</url>
+    <content><![CDATA[<p>这是一篇迟到了许久的文章，因工作原因一直没时间写（好吧，其实就是懒）。。</p>
+<h2 id="导语"><a href="#导语" class="headerlink" title="导语"></a>导语</h2><p>清明节当天，各大公司都将自己的应用设成了全局灰色调，以哀悼逝去的同胞，作为程序猿的我们，当然要研究一下此技术的实习方案。</p>
+<hr>
+<h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><p><strong>首先，核心代码如下：</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Paint paint = <span class="keyword">new</span> Paint();</span><br><span class="line">ColorMatrix cm = <span class="keyword">new</span> ColorMatrix();</span><br><span class="line">cm.setSaturation(<span class="number">0</span>);</span><br><span class="line">mPaint.setColorFilter(<span class="keyword">new</span> ColorMatrixColorFilter(cm));</span><br><span class="line">view.setLayerType(View.LAYER_TYPE_HARDWARE, paint);</span><br></pre></td></tr></table></figure>
+
+<a id="more"></a>
+
+<p><strong>上述代码原理是：</strong></p>
+<p>创建一个饱和度为0的颜色过滤器（饱和度为0时，view就变成了黑白色），将这个颜色过滤器通过setLayerType方法设置到当前View上，同时此方法会开启此View的硬件加速功能。</p>
+<p><strong>确定了原理，我们现在要确定代码执行的时机：</strong></p>
+<p>因为我们要实现的功能是全局灰度化，所以首先view的选型最好是一个根view，这样我们就不用在每个子view上重复操作了，其次我们还要适配Dialog和PopWindow等Window类型的组件,所以我们不能从Activity上动心思了，因为Activity本质也是一个Window，所以综上所述，我们将代码的执行时机选在了WindowManager的addView方法上面，因为不论是Activity的创建还是Dialog等组件的创建最终都会走到这个方法里面。</p>
+<p>我们只要在WindowManager执行addView方法时进行拦截，加入我们上面的代码逻辑即可。</p>
+<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><p>上面确定了大体思路，我们现在来进一步分析实现方案：</p>
+<p><strong>首先，既然是要进行hook操作，那么我们就要先确定hook点：</strong></p>
+<p>WindowManager是一个接口类，其实现类为WindowManagerImpl，而WindowManagerImpl中真正实现窗口操作的类为WindowManagerGlobal，是一个单例类，我们看一下其addView的实现：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addView</span><span class="params">(View view, ViewGroup.LayoutParams params,Display display, Window parentWindow)</span> </span>&#123;</span><br><span class="line">    ....</span><br><span class="line">	mViews.add(view);</span><br><span class="line">    ....</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以发现方法内部将view保存到了一个list里面，那我们可以hook这个list，在其添加view的时候，我们就调用上面的代码将其置灰，那如何才能感知到view的添加操作呢？</p>
+<p><strong>实现具有数据感知能力的list:</strong></p>
+<p>我们可以自定义一个数组，让其继承于 ArrayList，在其执行添加删除操作时，通过回调进行通知，具体实现如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ObservableArrayList</span>&lt;<span class="title">T</span>&gt; <span class="keyword">extends</span> <span class="title">ArrayList</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> List&lt;OnListChangeListener&gt; mListeners = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addOnListChangedListener</span><span class="params">(OnListChangeListener listener)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (mListeners != <span class="keyword">null</span>) &#123;</span><br><span class="line">            mListeners.add(listener);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">removeOnListChangedListener</span><span class="params">(OnListChangeListener listener)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (mListeners != <span class="keyword">null</span>) &#123;</span><br><span class="line">            mListeners.remove(listener);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">add</span><span class="params">(T object)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.add(object);</span><br><span class="line">        notifyAdd(size() - <span class="number">1</span>, <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> index, T object)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.add(index, object);</span><br><span class="line">        notifyAdd(index, <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">addAll</span><span class="params">(Collection&lt;? extends T&gt; collection)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> oldSize = size();</span><br><span class="line">        <span class="keyword">boolean</span> added = <span class="keyword">super</span>.addAll(collection);</span><br><span class="line">        <span class="keyword">if</span> (added) &#123;</span><br><span class="line">            notifyAdd(oldSize, size() - oldSize);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> added;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">clear</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> oldSize = size();</span><br><span class="line">        <span class="keyword">super</span>.clear();</span><br><span class="line">        <span class="keyword">if</span> (oldSize != <span class="number">0</span>) &#123;</span><br><span class="line">            notifyRemove(<span class="number">0</span>, oldSize);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> T <span class="title">remove</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">        T val = <span class="keyword">super</span>.remove(index);</span><br><span class="line">        notifyRemove(index, <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">return</span> val;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">remove</span><span class="params">(Object object)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> index = indexOf(object);</span><br><span class="line">        <span class="keyword">if</span> (index &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">            remove(index);</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> T <span class="title">set</span><span class="params">(<span class="keyword">int</span> index, T object)</span> </span>&#123;</span><br><span class="line">        T val = <span class="keyword">super</span>.set(index, object);</span><br><span class="line">        <span class="keyword">if</span> (mListeners != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (OnListChangeListener listener : mListeners) &#123;</span><br><span class="line">                listener.onChange(<span class="keyword">this</span>, index, <span class="number">1</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> val;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">removeRange</span><span class="params">(<span class="keyword">int</span> fromIndex, <span class="keyword">int</span> toIndex)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.removeRange(fromIndex, toIndex);</span><br><span class="line">        notifyRemove(fromIndex, toIndex - fromIndex);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">notifyAdd</span><span class="params">(<span class="keyword">int</span> start, <span class="keyword">int</span> count)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (mListeners != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (OnListChangeListener listener : mListeners) &#123;</span><br><span class="line">                listener.onAdd(<span class="keyword">this</span>, start, count);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">notifyRemove</span><span class="params">(<span class="keyword">int</span> start, <span class="keyword">int</span> count)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (mListeners != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (OnListChangeListener listener : mListeners) &#123;</span><br><span class="line">                listener.onRemove(<span class="keyword">this</span>, start, count);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">OnListChangeListener</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">onChange</span><span class="params">(ArrayList list, <span class="keyword">int</span> index, <span class="keyword">int</span> count)</span></span>;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">onAdd</span><span class="params">(ArrayList list, <span class="keyword">int</span> start, <span class="keyword">int</span> count)</span></span>;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">onRemove</span><span class="params">(ArrayList list, <span class="keyword">int</span> start, <span class="keyword">int</span> count)</span></span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>接下来就是执行hook操作：</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> enable 是否开启全局灰色调</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">enable</span><span class="params">(<span class="keyword">boolean</span> enable)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!enable) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">//灰色调Paint</span></span><br><span class="line">        <span class="keyword">final</span> Paint mPaint = <span class="keyword">new</span> Paint();</span><br><span class="line">        ColorMatrix mColorMatrix = <span class="keyword">new</span> ColorMatrix();</span><br><span class="line">        mColorMatrix.setSaturation(<span class="number">0</span>);</span><br><span class="line">        mPaint.setColorFilter(<span class="keyword">new</span> ColorMatrixColorFilter(mColorMatrix));</span><br><span class="line"></span><br><span class="line">        <span class="comment">//反射获取windowManagerGlobal</span></span><br><span class="line">        <span class="meta">@SuppressLint</span>(<span class="string">"PrivateApi"</span>)</span><br><span class="line">        Class&lt;?&gt; windowManagerGlobal = Class.forName(<span class="string">"android.view.WindowManagerGlobal"</span>);</span><br><span class="line">        <span class="meta">@SuppressLint</span>(<span class="string">"DiscouragedPrivateApi"</span>)</span><br><span class="line">        java.lang.reflect.Method getInstanceMethod = windowManagerGlobal.getDeclaredMethod(<span class="string">"getInstance"</span>);</span><br><span class="line">        getInstanceMethod.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">        Object windowManagerGlobalInstance = getInstanceMethod.invoke(windowManagerGlobal);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//反射获取mViews</span></span><br><span class="line">        Field mViewsField = windowManagerGlobal.getDeclaredField(<span class="string">"mViews"</span>);</span><br><span class="line">        mViewsField.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">        Object mViewsObject = mViewsField.get(windowManagerGlobalInstance);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//创建具有数据感知能力的ObservableArrayList</span></span><br><span class="line">        ObservableArrayList&lt;View&gt; observerArrayList = <span class="keyword">new</span> ObservableArrayList&lt;&gt;();</span><br><span class="line">        observerArrayList.addOnListChangedListener(<span class="keyword">new</span> ObservableArrayList.OnListChangeListener() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onChange</span><span class="params">(ArrayList list, <span class="keyword">int</span> index, <span class="keyword">int</span> count)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAdd</span><span class="params">(ArrayList list, <span class="keyword">int</span> start, <span class="keyword">int</span> count)</span> </span>&#123;</span><br><span class="line">                View view = (View) list.get(start);</span><br><span class="line">                <span class="keyword">if</span> (view != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    view.setLayerType(View.LAYER_TYPE_HARDWARE, mPaint);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onRemove</span><span class="params">(ArrayList list, <span class="keyword">int</span> start, <span class="keyword">int</span> count)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="comment">//将原有的数据添加到新创建的list</span></span><br><span class="line">        observerArrayList.addAll((ArrayList&lt;View&gt;) mViewsObject);</span><br><span class="line">        <span class="comment">//替换掉原有的mViews</span></span><br><span class="line">        mViewsField.set(windowManagerGlobalInstance, observerArrayList);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最后，只需在Application的onCreate中调用上述代码进行hook即可。</p>
+<h2 id="已知存在的问题"><a href="#已知存在的问题" class="headerlink" title="已知存在的问题"></a>已知存在的问题</h2><ol>
+<li>开启了View的硬件加速，可能会存在兼容性问题</li>
+<li>对于SurfaceView和Textureview以及其子类无效</li>
+</ol>
+<p>对于问题1笔者在项目中暂未遇到问题，如果读者朋友们在项目中遇到兼容性问题，欢迎留言；</p>
+<p>对于问题2其原因是因为这两个组件内部有独立的绘图表面（Surface），笔者目前未想到好的解决方案，如果有思路欢迎一块交流。</p>
+<h2 id="组件封装"><a href="#组件封装" class="headerlink" title="组件封装"></a>组件封装</h2><p>为了方便大家使用，我将上述代码封装成了组件并上传到了jcenter，使用方法如下：</p>
+<p><strong>添加依赖：</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">implementation <span class="string">'com.u2tzjtne:globalgray:0.0.1'</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>Application的onCreate中调用：</strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">GlobalGray.enable(<span class="keyword">true</span>);</span><br></pre></td></tr></table></figure>
+
+<h2 id="效果演示"><a href="#效果演示" class="headerlink" title="效果演示"></a>效果演示</h2><p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/demo.gif" alt="demo"></p>
+<h2 id="代码地址"><a href="#代码地址" class="headerlink" title="代码地址"></a>代码地址</h2><p><a href="https://github.com/U2tzJTNE/GlobalGray" target="_blank" rel="noopener">https://github.com/U2tzJTNE/GlobalGray</a></p>
+]]></content>
+      <categories>
+        <category>Android</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Ubuntu18-04搭建多用户v2ray代理</title>
+    <url>/posts/63417/</url>
+    <content><![CDATA[<h2 id="安装v2ray"><a href="#安装v2ray" class="headerlink" title="安装v2ray"></a>安装v2ray</h2><p><strong>时间校准</strong></p>
+<p>对于 V2Ray，它的验证方式包含时间，就算是配置没有任何问题，如果时间不正确，也无法连接 V2Ray 服务器的，服务器会认为你这是不合法的请求。所以系统时间一定要正确，只要保证时间误差在<strong>90秒</strong>之内就没问题。</p>
+<p>对于 VPS(Linux) 可以执行命令 <code>date -R</code> 查看时间：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ date -R</span><br><span class="line">Sun, 22 Jan 2017 10:10:36 -0500</span><br></pre></td></tr></table></figure>
+
+<a id="more"></a>
+
+<p>输出结果中的 -0500 代表的是时区为西 5 区，我要转换成东 8 区，可以使用 <code>tzselect</code> 修改时区：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo tzselect</span><br></pre></td></tr></table></figure>
+
+<p>在这里我们选择亚洲<strong>Asia</strong>，确认之后选择<strong>China</strong>，最后选择<strong>Beijing</strong>，之后复制文件到/etc目录下</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo cp /usr/share/zoneinfo/Asia/Shanghai  /etc/localtime</span><br></pre></td></tr></table></figure>
+
+<p>再次查看时间，确认已经修改为北京时间</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ date -R</span><br><span class="line">Wed, 17 Jun 2020 16:07:55 +0800</span><br></pre></td></tr></table></figure>
+
+<p><strong>安装服务端（如果安装v2-ui，可以跳过）</strong></p>
+<p>在 Linux 操作系统， V2Ray 的安装有脚本安装、手动安装、编译安装 3 种方式，选择其中一种即可，本指南仅提供使用使用脚本安装的方法，并仅推荐使用脚本安装，该脚本由 V2Ray 官方提供。该脚本仅可以在 Debian 系列或者支持 Systemd 的 Linux 操作系统使用。</p>
+<p>首先下载脚本：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ wget https://install.direct/go.sh</span><br></pre></td></tr></table></figure>
+
+<p>然后执行脚本安装 V2Ray:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo bash go.sh</span><br></pre></td></tr></table></figure>
+
+<p>如果安装不成功脚本会有红色的提示语句，这个时候你应当按照提示除错，除错后再重新执行一遍脚本安装 V2Ray。</p>
+<p>安装完之后，使用以下命令启动 V2Ray:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo systemctl start v2ray</span><br></pre></td></tr></table></figure>
+
+<p>在首次安装完成之后，V2Ray 不会自动启动，需要手动运行上述启动命令。而在已经运行 V2Ray 的 VPS 上再次执行安装脚本，安装脚本会自动停止 V2Ray 进程，升级 V2Ray 程序，然后自动运行 V2Ray。在升级过程中，配置文件不会被修改。</p>
+<h2 id="安装bbr-plus"><a href="#安装bbr-plus" class="headerlink" title="安装bbr-plus"></a>安装bbr-plus</h2><p>BBR是Google推出的一套拥塞控制算法，集成在最新的Linux内核中。BBR应用在VPS服务器上，可以明显改善服务器的网络传输速度，减少丢包。</p>
+<p>而BBR Plus版本，以及魔改版BBR，则是网友在原版BBR的基础上，对一些参数进行改良后的修正版本，比原版BBR有着更为显著的加速效果。至于两个改良版本哪个加速效果更好，大家可以分别安装测试，选取最适合自己的版本。下文会提供各版本的一键安装脚本。</p>
+<p><strong>一键安装脚本使用：</strong></p>
+<p>1.连接VPS服务器，运行如下脚本：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo wget --no-check-certificate -O tcp.sh https://github.com/cx9208/Linux-NetSpeed/raw/master/tcp.sh &amp;&amp; chmod +x tcp.sh &amp;&amp; ./tcp.sh</span><br></pre></td></tr></table></figure>
+
+<p>2.接下来会出现菜单选择界面，如下所示：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">TCP加速 一键安装管理脚本 [v1.3.1]</span><br><span class="line">  -- 就是爱生活 | 94ish.me --</span><br><span class="line">  </span><br><span class="line"> 0. 升级脚本</span><br><span class="line">————————————内核管理————————————</span><br><span class="line"> 1. 安装 BBR/BBR魔改版内核</span><br><span class="line"> 2. 安装 BBRplus版内核 </span><br><span class="line"> 3. 安装 Lotserver(锐速)内核</span><br><span class="line">————————————加速管理————————————</span><br><span class="line"> 4. 使用BBR加速</span><br><span class="line"> 5. 使用BBR魔改版加速</span><br><span class="line"> 6. 使用暴力BBR魔改版加速(不支持部分系统)</span><br><span class="line"> 7. 使用BBRplus版加速</span><br><span class="line"> 8. 使用Lotserver(锐速)加速</span><br><span class="line">————————————杂项管理————————————</span><br><span class="line"> 9. 卸载全部加速</span><br><span class="line"> 10. 系统配置优化</span><br><span class="line"> 11. 退出脚本</span><br><span class="line">————————————————————————————————</span><br><span class="line"></span><br><span class="line"> 当前状态: 已安装 BBRplus 加速内核 , BBRplus启动成功</span><br><span class="line"></span><br><span class="line"> 请输入数字 [0-11]:2</span><br></pre></td></tr></table></figure>
+
+<p>以BBR Plus版本为例，输入对应的数字2回车，开始安装内核。</p>
+<p>3.脚本运行过程中，如果出现如下提示，用方向键选No回车：</p>
+<img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/bbr-install-tip.png" style="zoom:75%;" />
+
+<p>4.原有内核卸载完毕，新内核安装成功后，会提示重启，输入Y回车以重启。</p>
+<p>5.重启后再次用Putty连接VPS服务器，运行如下命令重新打开脚本：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo ./tcp.sh</span><br></pre></td></tr></table></figure>
+
+<p>6.在脚本菜单选项中，输入数字7回车，开启BBR Plus加速：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">TCP加速 一键安装管理脚本 [v1.3.1]</span><br><span class="line">  -- 就是爱生活 | 94ish.me --</span><br><span class="line">  </span><br><span class="line"> 0. 升级脚本</span><br><span class="line">————————————内核管理————————————</span><br><span class="line"> 1. 安装 BBR&#x2F;BBR魔改版内核</span><br><span class="line"> 2. 安装 BBRplus版内核 </span><br><span class="line"> 3. 安装 Lotserver(锐速)内核</span><br><span class="line">————————————加速管理————————————</span><br><span class="line"> 4. 使用BBR加速</span><br><span class="line"> 5. 使用BBR魔改版加速</span><br><span class="line"> 6. 使用暴力BBR魔改版加速(不支持部分系统)</span><br><span class="line"> 7. 使用BBRplus版加速</span><br><span class="line"> 8. 使用Lotserver(锐速)加速</span><br><span class="line">————————————杂项管理————————————</span><br><span class="line"> 9. 卸载全部加速</span><br><span class="line"> 10. 系统配置优化</span><br><span class="line"> 11. 退出脚本</span><br><span class="line">————————————————————————————————</span><br><span class="line"></span><br><span class="line"> 当前状态: 已安装 BBRplus 加速内核 , BBRplus启动成功</span><br><span class="line"></span><br><span class="line"> 请输入数字 [0-11]:7</span><br></pre></td></tr></table></figure>
+
+<p>7.菜单中的第10项，可以对系统中的一些网络参数进行额外优化，可酌情开启。</p>
+<h2 id="安装v2-ui"><a href="#安装v2-ui" class="headerlink" title="安装v2-ui"></a>安装v2-ui</h2><p>为了方便多用户管理，以及流量监控，我们可以安装v2-ui，当然你也可以直接编辑v2ray配置文件实现同样的功能。</p>
+<p><strong>注意事项（必看）</strong></p>
+<p>v2-ui 与其它所有关于修改 v2ray 配置文件的工具<strong>完全不兼容</strong>（包括 sprov-ui），安装 v2-ui 后会导致 v2ray 配置文件被重写，导致原有 v2ray 账号丢失，如有必要，请自行提前做好备份，以免造成不必要的后果。</p>
+<p><strong>建议系统</strong></p>
+<p>面板建议以下系统安装，建议尽量使用新版的系统，<strong>且必须是 64 位系统</strong>：</p>
+<ul>
+<li>CentOS 7+</li>
+<li>Ubuntu 16+</li>
+<li>Debian 8+</li>
+</ul>
+<p><strong>一键安装&amp;升级</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo bash &lt;(curl -Ls https://blog.sprov.xyz/v2-ui.sh)</span><br></pre></td></tr></table></figure>
+
+<p>更新与升级都是这条命令，升级不会造成数据丢失，你所做的个性化面板设置也会保留。</p>
+<p>接下来会出现菜单选择界面，如下所示：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">v2-ui                  <span class="comment"># 显示管理菜单 (功能更多)</span></span><br><span class="line">v2-ui start            <span class="comment"># 启动 v2-ui 面板</span></span><br><span class="line">v2-ui stop             <span class="comment"># 停止 v2-ui 面板</span></span><br><span class="line">v2-ui restart          <span class="comment"># 重启 v2-ui 面板</span></span><br><span class="line">v2-ui status           <span class="comment"># 查看 v2-ui 状态</span></span><br><span class="line">v2-ui <span class="built_in">enable</span>           <span class="comment"># 设置 v2-ui 开机自启</span></span><br><span class="line">v2-ui <span class="built_in">disable</span>          <span class="comment"># 取消 v2-ui 开机自启</span></span><br><span class="line">v2-ui <span class="built_in">log</span>              <span class="comment"># 查看 v2-ui 日志</span></span><br><span class="line">v2-ui update           <span class="comment"># 更新 v2-ui 面板</span></span><br><span class="line">v2-ui install          <span class="comment"># 安装 v2-ui 面板</span></span><br><span class="line">v2-ui uninstall        <span class="comment"># 卸载 v2-ui 面板</span></span><br></pre></td></tr></table></figure>
+
+<p>启动 v2-ui 面板</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo v2-ui start</span><br></pre></td></tr></table></figure>
+
+<p>设置 v2-ui 开机自启</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo v2-ui <span class="built_in">enable</span></span><br></pre></td></tr></table></figure>
+
+<p>安装后，在浏览器中打开 <strong>http://&lt;服务器IP&gt;:65432</strong> 即可访问面板，默认用户名和密码都是 <strong>admin</strong>。</p>
+<p>升级后，仍然使用你升级前的方式进入面板。</p>
+<p><strong>添加账号</strong></p>
+<p>一般情况下只需要添加备注，其余配置默认即可。</p>
+<p><img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/v2-ui-add-user.png" alt=""></p>
+<h2 id="安装客户端"><a href="#安装客户端" class="headerlink" title="安装客户端"></a>安装客户端</h2><p><strong>常用客户端</strong></p>
+<p>v2rayN（Windows）<a href="https://github.com/2dust/v2rayN/releases" target="_blank" rel="noopener">Github</a></p>
+<p>v2rayX（Mac） <a href="https://github.com/Cenmrev/V2RayX/releases" target="_blank" rel="noopener">Github</a></p>
+<p>v2rayNG（Android） <a href="https://github.com/2dust/v2rayNG/releases" target="_blank" rel="noopener">Github</a> | <a href="https://play.google.com/store/apps/details?id=com.v2ray.ang" target="_blank" rel="noopener">Play Store</a></p>
+<p>Kitsunebi（Android） <a href="https://github.com/eycorsican/kitsunebi-android/releases" target="_blank" rel="noopener">Github</a> | <a href="https://play.google.com/store/apps/details?id=fun.kitsunebi.kitsunebi4android" target="_blank" rel="noopener">Play Store</a></p>
+<p>BifrostV（Android） <a href="https://play.google.com/store/apps/details?id=com.github.dawndiy.bifrostv" target="_blank" rel="noopener">Play Store</a></p>
+<p>Kitsunebi（iOS）<a href="https://itunes.apple.com/us/app/kitsunebi-proxy-utility/id1446584073?mt=8" target="_blank" rel="noopener">iTunes</a></p>
+<p>i2Ray（iOS）<a href="https://itunes.apple.com/us/app/i2ray/id1445270056?mt=8" target="_blank" rel="noopener">iTunes</a></p>
+<p>Shadowrocket（iOS） <a href="https://itunes.apple.com/us/app/shadowrocket/id932747118?mt=8" target="_blank" rel="noopener">iTunes</a></p>
+<p>Pepi（iOS） <a href="https://itunes.apple.com/us/app/pepi/id1283082051?mt=8" target="_blank" rel="noopener">iTunes</a></p>
+<p>Quantumult（iOS） <a href="https://itunes.apple.com/us/app/quantumult/id1252015438?mt=8" target="_blank" rel="noopener">iTunes</a></p>
+<p><strong>v2rayN使用</strong></p>
+<p>1.下载包含v2ray-core的压缩包</p>
+<img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/v2rayN-download.png" style="zoom:60%;" />
+
+<p>2.解压后右键属性，添加管理员权限</p>
+<img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/v2rayN-add-admin.png" style="zoom:80%;" />
+
+<p>3.之后创建一个快捷方式放到windows的启动文件夹（C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp）里面，这样开机时便能自动启动客户端了</p>
+<p>4.打开v2-ui，找到创建的账户，点击显示二维码：</p>
+<img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/v2-ui-show-qrcode.png" style="zoom:80%;" />
+
+<p>5.右键已打开的v2rayN客户端图标，选择扫描屏幕上的二维码：</p>
+<img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/v2rayN-scan-qrcode.png" style="zoom:67%;" />
+
+<p>6.然后代理选择pac模式（日常用pac模式即可）</p>
+<img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/v2rayN-set-pac.png" style="zoom:75%;" />
+
+<p>7.如果遇到某些网站打不开可以将代理模式设置为全局，或者将该网站添加到用户pac中（推荐）</p>
+<img src="https://u2tzjtne-blog-picture.oss-cn-hangzhou.aliyuncs.com/v2rayN-add-user-pac.png" style="zoom:80%;" />]]></content>
+      <categories>
+        <category>v2ray</category>
+      </categories>
+      <tags>
+        <tag>v2ray ubuntu linux</tag>
+      </tags>
+  </entry>
+</search>
