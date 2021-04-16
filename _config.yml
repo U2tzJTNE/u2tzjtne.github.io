@@ -1,0 +1,35 @@
+# Site settings
+title: 蒋路凯
+info: '一个热爱开源的Android Developer.'
+description: 'Business Card Page'
+url: 'http://about.u2tzjtne.cn'
+baseurl: ''
+blogurl: 'https://juejin.cn/user/1908407917097822/posts'
+profilepic: '/images/avatar.png'
+bkimage: '/images/bk1.jpg'
+google_analytics: UA-XXXXXX-X
+font_awesome: '8fdf8b0049.js'
+
+author:
+  name: '蒋路凯'
+  email: u2tzjtne@gmail.com
+  twitter_username: U2tzJTNE
+  facebook_username: U2tzJTNE
+  github_username:  U2tzJTNE
+
+# Build settings
+destination: _site
+markdown: kramdown
+highlighter: rouge
+
+sass:
+    sass_dir: _sass
+    style: compressed
+
+kramdown:
+  # use Github Flavored Markdown
+  input: GFM
+  # do not replace newlines by <br>s
+  hard_wrap: false
+
+#plugins: ['jekyll-paginate']
