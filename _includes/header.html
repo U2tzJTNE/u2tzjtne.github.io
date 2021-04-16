@@ -65,17 +65,6 @@
               </li>
             {% endif %}
 
-            {% if site.author.meetup_name %}
-            <!-- Meetup -->
-            <li class="navigation__item">
-              <a href="https://www.meetup.com/{{ site.author.meetup_name }}" title="Meetup {{ site.author.meetup_name }}" target="_blank">
-                <!--<div style="font-size: 1.4rem;"><i class="fab fa-meetup fa-lg"></i></div>-->
-                <i class="fab fa-meetup fa-lg"></i>
-                <span class="label">Meetup</span>
-              </a>
-            </li>
-            {% endif %}
-
             {% if site.author.email %}
               <!-- Email -->
               <li class="navigation__item">
@@ -94,8 +83,8 @@
           <nav class="cover-navigation navigation--social">
             <ul class="navigation">
               <li class="navigation__item"><a href="{{ site.blogurl }}" title="link to Blog"><i class="fas fa-link fa-lg"></i>&nbsp;Blog</a></li>
-              <!--<li class="navigation__item"><a href="{{ site.baseurl }}/#" title="link to Tweets" class="panel-button"><i class="icon icon-social-twitter"></i>&nbsp;Tweets</a></li>-->
-              <li class="navigation__item"><a href="{{ site.baseurl }}/#projects" title="link to Tweets" class="panel-button projects-button"><i class="fas fa-file-code fa-lg"></i>&nbsp;Projects</a></li>
+              <li class="navigation__item"><a href="{{ site.github }}" title="link to Github" class="panel-button projects-button"><i class="fas fa-file-code fa-lg"></i>&nbsp;Github</a></li>
+              <!-- <li class="navigation__item"><a href="{{ site.baseurl }}/#projects" title="link to Tweets" class="panel-button projects-button"><i class="fas fa-file-code fa-lg"></i>&nbsp;Projects</a></li> -->
             </ul>
           </nav>
 

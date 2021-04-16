@@ -3,7 +3,7 @@ title: 蒋路凯
 info: '一个热爱开源的Android Developer.'
 description: 'Business Card Page'
 url: 'http://about.u2tzjtne.cn'
-baseurl: ''
+github: 'https://github.com/U2tzJTNE'
 blogurl: 'https://juejin.cn/user/1908407917097822/posts'
 profilepic: '/images/avatar.png'
 bkimage: '/images/bk1.jpg'
@@ -15,7 +15,7 @@ author:
   email: u2tzjtne@gmail.com
   twitter_username: U2tzJTNE
   facebook_username: U2tzJTNE
-  github_username:  U2tzJTNE
+# github_username:  U2tzJTNE
 
 # Build settings
 destination: _site
