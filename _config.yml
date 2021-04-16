@@ -7,7 +7,7 @@ github: 'https://github.com/U2tzJTNE'
 blogurl: 'https://juejin.cn/user/1908407917097822/posts'
 profilepic: '/images/avatar.png'
 bkimage: '/images/cover.jpg'
-google_analytics: UA-XXXXXX-X
+google_analytics: G-4503Q8YT2F
 font_awesome: '8fdf8b0049.js'
 
 author:
@@ -15,6 +15,7 @@ author:
   email: u2tzjtne@gmail.com
   twitter_username: U2tzJTNE
   facebook_username: U2tzJTNE
+  linkedin_username: 路凯-蒋-364b6b156
 # github_username:  U2tzJTNE
 
 # Build settings
